@@ -251,22 +251,30 @@ match(Tile, NeighborTile, D):-
 
 % Pentru implementare consider cazul de baza, cand nu ne intereseaza ce
 % intoarce predicatul pentru o lista vida de perechi. Pentru cazul
-% general, stim ca o piesa se potriveste cu un vecin de-al ei pe o
-% anumita directie si produce o anumita rotatie, daca piesa rotita cu
-% rotatia respectiva se potriveste si cu orice alta piesa din lista de
-% vecini(pe directia indicata).
-% Mai stim si ca piesa produce rotatia respectiva, daca se potriveste cu
-% vecinul din lista de vecini si rotatia face parte din lista de rotatii
-% a piesei respective.
+% general, generez toate rotatiile piesei si verific de fiecare data
+% daca "Rot" apartine vreunei perechi din lista generata si daca Rotatia
+% "Roti"(i = 1:3) astfel produsa se potriveste cu piesa vecina din lista
+% de perechi de vecini, pe directia indicata. La final verific recursiv
+% daca predicatul este adevarat si pentru restul listei de vecini.
 findRotation(_, _, _) :- false.
 findRotation(_, [], _).
-findRotation(Tile, [(NeighTile, Dir) | T], Rot):-
-    findRotation(RotTile, T, Rot),
-    ccw(Tile, Rot, RotTile),
-    match(RotTile, NeighTile, Dir).
 
 findRotation(Tile, [(NTile, NDir) | T], Rot):-
-    findRotation(Tile, T, Rot),
+    rotations(Tile, [(Rot, Tile) | _]),
     match(Tile, NTile, NDir),
-    rotations(Tile, RotationsList),
-    member((Rot, _), RotationsList).
+    findRotation(Tile, T, Rot).
+
+findRotation(Tile, [(NTile, NDir) | T], Rot):-
+    rotations(Tile, [_, (Rot, Rot1) | _]),
+    match(Rot1, NTile, NDir),
+    findRotation(Tile, T, Rot).
+
+findRotation(Tile, [(NTile, NDir) | T], Rot):-
+    rotations(Tile, [_, _, (Rot, Rot2) | _]),
+    match(Rot2, NTile, NDir),
+    findRotation(Tile, T, Rot).
+
+findRotation(Tile, [(NTile, NDir) | T], Rot):-
+    rotations(Tile, [_, _, _, (Rot, Rot3)]),
+    match(Rot3, NTile, NDir),
+    findRotation(Tile, T, Rot).
